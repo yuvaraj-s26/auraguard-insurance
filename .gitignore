@@ -1,0 +1,23 @@
+# Ignore everything
+*
+
+# Keep this file
+!.gitignore
+
+# Track frontend
+!frontend/
+!frontend/**
+
+# Ignore React dependencies
+frontend/node_modules/
+frontend/dist/
+
+# Track backend
+!backend/
+!backend/**
+
+# Ignore ASP.NET build files
+backend/bin/
+backend/obj/
+backend/.vs/
+backend/**/*.user
