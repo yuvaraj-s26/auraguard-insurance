@@ -22,7 +22,10 @@ export default function Login({ onLogin }) {
     setError('');
     setLoading(true);
     try {
-      const response = await api.post('/auth/login', { email, password });
+      const response = await api.post('/auth/login', { 
+        email: email.trim(), 
+        password: password.trim() 
+      });
       
       // If role is Admin, prompt for 2FA verification step
       if (response.data.role === 'Admin') {
@@ -42,6 +45,12 @@ export default function Login({ onLogin }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleQuickFill = (demoEmail, demoPassword) => {
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+    setError('');
   };
 
   const handleVerify2FA = (e) => {
@@ -91,7 +100,37 @@ export default function Login({ onLogin }) {
                 {loading ? 'Signing In...' : 'Sign In'}
               </button>
             </form>
-            <p style={{ marginTop: '20px', textAlign: 'center', color: '#94a3b8', fontSize: '0.9rem' }}>
+
+            <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid rgba(255, 255, 255, 0.1)', textAlign: 'center' }}>
+              <p style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '600', marginBottom: '10px' }}>
+                Quick Demo Accounts (Click to Fill)
+              </p>
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                <button 
+                  type="button" 
+                  onClick={() => handleQuickFill('yuvaraj@insurance.com', 'Yuva@123')}
+                  style={{ fontSize: '0.75rem', padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(99, 102, 241, 0.4)', background: 'rgba(99, 102, 241, 0.1)', color: '#818cf8', cursor: 'pointer', fontWeight: '600' }}
+                >
+                  Admin
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => handleQuickFill('praveen@insurance.com', 'Praveen@123')}
+                  style={{ fontSize: '0.75rem', padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(16, 185, 129, 0.4)', background: 'rgba(16, 185, 129, 0.1)', color: '#34d399', cursor: 'pointer', fontWeight: '600' }}
+                >
+                  Agent
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => handleQuickFill('raj@insurance.com', 'Raj@123')}
+                  style={{ fontSize: '0.75rem', padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(6, 182, 212, 0.4)', background: 'rgba(6, 182, 212, 0.1)', color: '#22d3ee', cursor: 'pointer', fontWeight: '600' }}
+                >
+                  Customer
+                </button>
+              </div>
+            </div>
+
+            <p style={{ marginTop: '16px', textAlign: 'center', color: '#94a3b8', fontSize: '0.9rem' }}>
               Don't have an account? <Link to="/register" style={{ color: '#6366f1', textDecoration: 'none', fontWeight: '600' }}>Register here</Link>
             </p>
           </>
