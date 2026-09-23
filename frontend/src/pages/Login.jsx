@@ -34,7 +34,11 @@ export default function Login({ onLogin }) {
         navigate('/');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Check your credentials.');
+      if (!err.response) {
+        setError('Server is warming up or unreachable. Please wait 10 seconds and try again.');
+      } else {
+        setError(err.response?.data?.message || 'Invalid email or password.');
+      }
     } finally {
       setLoading(false);
     }
