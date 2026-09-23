@@ -12,7 +12,33 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var rawConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+    ?? builder.Configuration["DefaultConnection"] 
+    ?? builder.Configuration["DATABASE_URL"];
+
+var connectionString = rawConnectionString;
+
+if (!string.IsNullOrEmpty(rawConnectionString) && (rawConnectionString.StartsWith("mysql://", StringComparison.OrdinalIgnoreCase) || rawConnectionString.StartsWith("mariadb://", StringComparison.OrdinalIgnoreCase)))
+{
+    try
+    {
+        var uri = new Uri(rawConnectionString);
+        var userInfo = uri.UserInfo.Split(':');
+        var user = userInfo[0];
+        var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
+        var host = uri.Host;
+        var port = uri.Port > 0 ? uri.Port : 3306;
+        var database = uri.AbsolutePath.TrimStart('/');
+        if (string.IsNullOrEmpty(database)) database = "defaultdb";
+
+        connectionString = $"Server={host};Port={port};Database={database};User={user};Password={password};SslMode=Required;AllowPublicKeyRetrieval=True;";
+    }
+    catch
+    {
+        connectionString = rawConnectionString;
+    }
+}
+
 var serverVersion = new MySqlServerVersion(new Version(8, 0, 36));
 builder.Services.AddDbContext<InsuranceDbContext>(options =>
     options.UseMySql(
