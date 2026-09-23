@@ -105,13 +105,13 @@ export default function Login({ onLogin }) {
               <p style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '600', marginBottom: '10px' }}>
                 Quick Demo Accounts (Click to Fill)
               </p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                 <button 
                   type="button" 
-                  onClick={() => handleQuickFill('yuvaraja4780@gmail.com', 'Yuvaraj2610')}
-                  style={{ fontSize: '0.75rem', padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(99, 102, 241, 0.6)', background: 'rgba(99, 102, 241, 0.2)', color: '#a5b4fc', cursor: 'pointer', fontWeight: '700' }}
+                  onClick={() => handleQuickFill('yuvaraja4780@gmail.com', 'Yuva@123')}
+                  style={{ fontSize: '0.75rem', padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(99, 102, 241, 0.4)', background: 'rgba(99, 102, 241, 0.1)', color: '#818cf8', cursor: 'pointer', fontWeight: '600' }}
                 >
-                  Yuvaraj (Admin)
+                  Admin (Yuvaraj)
                 </button>
                 <button 
                   type="button" 
