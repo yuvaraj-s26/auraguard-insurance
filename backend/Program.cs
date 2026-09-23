@@ -131,6 +131,52 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.MapGet("/api/health", async (InsuranceDbContext db) =>
+{
+    try
+    {
+        var canConnect = await db.Database.CanConnectAsync();
+        var userCount = canConnect ? await db.Users.CountAsync() : -1;
+        var policyCount = canConnect ? await db.PolicyTypes.CountAsync() : -1;
+        return Results.Ok(new
+        {
+            status = "healthy",
+            databaseConnected = canConnect,
+            usersCount = userCount,
+            policyTypesCount = policyCount
+        });
+    }
+    catch (Exception ex)
+    {
+        return Results.Json(new
+        {
+            status = "error",
+            errorMessage = ex.Message,
+            innerError = ex.InnerException?.Message
+        }, statusCode: 500);
+    }
+});
+
+app.MapPost("/api/health/seed", async (InsuranceDbContext db) =>
+{
+    try
+    {
+        await db.Database.EnsureCreatedAsync();
+        await DbInitializer.SeedAsync(db);
+        var users = await db.Users.Select(u => new { u.UserId, u.Email, u.Role }).ToListAsync();
+        return Results.Ok(new { message = "Database seeded successfully", users });
+    }
+    catch (Exception ex)
+    {
+        return Results.Json(new
+        {
+            status = "seed_error",
+            errorMessage = ex.Message,
+            innerError = ex.InnerException?.Message
+        }, statusCode: 500);
+    }
+});
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
