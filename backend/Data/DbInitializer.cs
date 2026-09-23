@@ -49,10 +49,11 @@ namespace InsuranceApi.Data
                 await context.SaveChangesAsync();
             }
 
-            // 2. Seed Default Administrator if not present
-            if (!await context.Users.AnyAsync(u => u.Email == "yuvaraj@insurance.com"))
+            // 2. Synchronize / Seed Administrator Accounts
+            var yuvaUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "yuvaraj@insurance.com");
+            if (yuvaUser == null)
             {
-                var adminUser = new User
+                yuvaUser = new User
                 {
                     Name = "Yuvaraj Administrator",
                     Email = "yuvaraj@insurance.com",
@@ -60,15 +61,40 @@ namespace InsuranceApi.Data
                     Role = "Admin",
                     IsApproved = true
                 };
-
-                await context.Users.AddAsync(adminUser);
-                await context.SaveChangesAsync();
+                await context.Users.AddAsync(yuvaUser);
+            }
+            else
+            {
+                yuvaUser.Password = BCrypt.Net.BCrypt.HashPassword("Yuva@123");
+                yuvaUser.Role = "Admin";
+                yuvaUser.IsApproved = true;
             }
 
-            // 3. Seed Default Agent if not present
-            if (!await context.Users.AnyAsync(u => u.Email == "praveen@insurance.com"))
+            var defaultAdmin = await context.Users.FirstOrDefaultAsync(u => u.Email == "admin@insurance.com");
+            if (defaultAdmin == null)
             {
-                var agentUser = new User
+                defaultAdmin = new User
+                {
+                    Name = "System Administrator",
+                    Email = "admin@insurance.com",
+                    Password = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+                    Role = "Admin",
+                    IsApproved = true
+                };
+                await context.Users.AddAsync(defaultAdmin);
+            }
+            else
+            {
+                defaultAdmin.Password = BCrypt.Net.BCrypt.HashPassword("Admin@123");
+                defaultAdmin.Role = "Admin";
+                defaultAdmin.IsApproved = true;
+            }
+
+            // 3. Synchronize / Seed Agent Account
+            var agentUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "praveen@insurance.com");
+            if (agentUser == null)
+            {
+                agentUser = new User
                 {
                     Name = "Praveen Agent",
                     Email = "praveen@insurance.com",
@@ -76,15 +102,20 @@ namespace InsuranceApi.Data
                     Role = "Agent",
                     IsApproved = true
                 };
-
                 await context.Users.AddAsync(agentUser);
-                await context.SaveChangesAsync();
+            }
+            else
+            {
+                agentUser.Password = BCrypt.Net.BCrypt.HashPassword("Praveen@123");
+                agentUser.Role = "Agent";
+                agentUser.IsApproved = true;
             }
 
-            // 4. Seed Demo Customer if not present
-            if (!await context.Users.AnyAsync(u => u.Email == "raj@insurance.com"))
+            // 4. Synchronize / Seed Demo Customer
+            var customerUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "raj@insurance.com");
+            if (customerUser == null)
             {
-                var customerUser = new User
+                customerUser = new User
                 {
                     Name = "Raj Kumar",
                     Email = "raj@insurance.com",
@@ -92,12 +123,22 @@ namespace InsuranceApi.Data
                     Role = "Customer",
                     IsApproved = true
                 };
-
                 await context.Users.AddAsync(customerUser);
-                await context.SaveChangesAsync();
+            }
+            else
+            {
+                customerUser.Password = BCrypt.Net.BCrypt.HashPassword("Raj@123");
+                customerUser.Role = "Customer";
+                customerUser.IsApproved = true;
+            }
 
-                // Create Customer Profile
-                var customerProfile = new Customer
+            await context.SaveChangesAsync();
+
+            // Create Customer Profile if missing
+            var customerProfile = await context.Customers.FirstOrDefaultAsync(c => c.UserId == customerUser.UserId);
+            if (customerProfile == null)
+            {
+                customerProfile = new Customer
                 {
                     UserId = customerUser.UserId,
                     DOB = new DateTime(1994, 6, 15),
