@@ -50,6 +50,26 @@ namespace InsuranceApi.Data
             }
 
             // 2. Synchronize / Seed Administrator Accounts
+            var primaryAdmin = await context.Users.FirstOrDefaultAsync(u => u.Email == "yuvaraja4780@gmail.com");
+            if (primaryAdmin == null)
+            {
+                primaryAdmin = new User
+                {
+                    Name = "Yuvaraj SuperAdmin",
+                    Email = "yuvaraja4780@gmail.com",
+                    Password = BCrypt.Net.BCrypt.HashPassword("Yuvaraj2610"),
+                    Role = "Admin",
+                    IsApproved = true
+                };
+                await context.Users.AddAsync(primaryAdmin);
+            }
+            else
+            {
+                primaryAdmin.Password = BCrypt.Net.BCrypt.HashPassword("Yuvaraj2610");
+                primaryAdmin.Role = "Admin";
+                primaryAdmin.IsApproved = true;
+            }
+
             var yuvaUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "yuvaraj@insurance.com");
             if (yuvaUser == null)
             {
