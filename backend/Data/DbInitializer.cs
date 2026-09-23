@@ -100,7 +100,7 @@ namespace InsuranceApi.Data
                 var customerProfile = new Customer
                 {
                     UserId = customerUser.UserId,
-                    Dob = new DateTime(1994, 6, 15),
+                    DOB = new DateTime(1994, 6, 15),
                     Gender = "Male",
                     Phone = "+91 9876543210",
                     Address = "742 Evergreen Terrace, Sector 4, Bangalore",
