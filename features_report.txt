@@ -1,0 +1,100 @@
+================================================================================
+           AURAGUARD INSURANCE POLICY MANAGEMENT SYSTEM - FEATURE MAP           
+================================================================================
+This report outlines how the features implemented in the ASP.NET Core, React, 
+and MySQL Insurance System resolve the five core operational challenges.
+
+--------------------------------------------------------------------------------
+1. PROBLEM: POLICY TRACKING DIFFICULTIES
+--------------------------------------------------------------------------------
+- SOLUTIONS & FEATURES IMPLEMENTED:
+  * Dynamic Policy Type Catalog: Fetches and displays current coverage options, 
+    max coverage limits, and premium rates from the database.
+  * Real-Time Coverage Trackers: Displays active/pending/expired status on both
+    customer and agent dashboards.
+  * Policy ID Transparency: Displays unique database Policy IDs directly in the
+    "Active & Registered Policies" table to simplify mapping.
+  * Age Restrictions & DOB Check: Enforces that customer profile creation and DOB
+    updates are restricted to users who are 18 years of age or older.
+  * Instant Quote Calculator: Interactive slide-bar estimators on the public 
+    landing page calculate annual/monthly premiums with age-risk modifiers.
+  * Expiring Alerts Notification: Proactively alerts clients in the header bar 
+    if any of their active policies are expiring within 30 days, calculating the
+    exact number of days left.
+
+--------------------------------------------------------------------------------
+2. PROBLEM: DELAYED CLAIM PROCESSING
+--------------------------------------------------------------------------------
+- SOLUTIONS & FEATURES IMPLEMENTED:
+  * Self-Service Claim Submission: Customers file claims instantly from their 
+    dashboard by inputting incident date, description, and settlement request.
+  * Automated Rules Engine: Checks claim eligibility on submission, checking for:
+    - Policy validity (active vs expired/pending).
+    - Claim amount vs total sum-assured limit.
+    - Incident date vs coverage window.
+  * Agent-Admin Split Settlement approvals: 
+    - Agent review: Agents review claims and approve them, which automatically
+      transitions the status to "Pending Settlement" (Awaiting Settle).
+    - Admin release: Restricts the final disbursement release to the Admin role,
+      who reviews and confirms the payout, settling the claim.
+  * Processing SLA Countdowns: Shows average processing duration metrics in 
+    hours to monitor active verification timelines.
+  * Instant Payout Receipts: Provides a downloadable, printable TXT receipt immediately
+    upon claim approval/settlement, recording the specific user/agent name and role
+    who deposited/settled the funds.
+
+--------------------------------------------------------------------------------
+3. PROBLEM: CUSTOMER COMMUNICATION ISSUES
+--------------------------------------------------------------------------------
+- SOLUTIONS & FEATURES IMPLEMENTED:
+  * Floating AI Virtual Assistant ("Aura"): Context-aware chatbot widget 
+    available to customers on all dashboard layouts.
+  * Smart Policy Audit Answers: The chatbot dynamically fetches customer 
+    policies, computes days remaining, lists sum assured limits, and cross-
+    references claims filed against specific policies. Supports matching queries
+    using explicit Policy IDs (e.g. "status of policy 1", "policy #2", "policy id 3").
+  * Interactive Claim Comments: A chat thread inside each claim record enables 
+    real-time, auditable communication between customers and claims verifiers.
+  * Private Staff Channel (Customer-Safe Logs): 
+    - Internal Notes: Allows Agents and Admins to flag comments as internal notes
+      which are completely hidden from Customer accounts.
+    - Automatic Keywords filter: Automatically hides sensitive messages, like
+      "Request settlement of [Customer]", from the customer view.
+  * Real-Time Comment Alerts: Warning-bell notification system alerts staff or
+    clients when a new claim comment has been posted in the last 24 hours.
+
+--------------------------------------------------------------------------------
+4. PROBLEM: DOCUMENT MANAGEMENT PROBLEMS
+================================================================================
+- SOLUTIONS & FEATURES IMPLEMENTED:
+  * Secure Document Vault: Encrypted files module mapped to active policies.
+  * File Upload Categorization: Standardizes client onboarding paperwork,
+    accepting Aadhaar cards, claim invoice receipts, and compliance documents.
+  * Audit Verification Workflow: Verifiers can instantly view, download, or delete
+    uploaded compliance documents, marking files as "Verified" or "Rejected" with
+    custom auditing notes shown to the client.
+
+--------------------------------------------------------------------------------
+5. PROBLEM: OPERATIONAL INEFFICIENCIES
+--------------------------------------------------------------------------------
+- SOLUTIONS & FEATURES IMPLEMENTED:
+  * Administrative Intelligence Center: Comprehensive Admin dashboard reporting 
+    Total Customers, Active/Total Policies ratio, and Pending Claims.
+  * Immutable Agent Activity Audit Logs: 
+    - Automatic Tracing: Secretly tracks and logs all Agent processes (approving
+      claims, process renewals, cancels, verifying files, premium collections).
+    - Admin Activity View: Renders a scrollable log card displaying Agent Name,
+      timestamp, category, and action details strictly visible to Admins.
+  * Financial Revenue Telemetry: Dynamic AreaChart visualizer displaying premium 
+    collection revenue trends over time.
+  * Exportable Operational Reports: One-click CSV export of key indicators, 
+    including Loss Ratio, Policy Retention, and Avg Settlement SLA.
+  * Secure Agent Registrations: A request-based Agent onboarding system where
+    agent signups must be vetted and approved by the Admin before accessing files.
+  * Developer Account Provisioner ("create-user.js"): Command-line utility to
+    rapidly spin up Admin or Agent test logins with correct BCrypt hashes.
+  * Dynamic Light & Dark Themes:
+    - Interactive Toggle: Custom Sun/Moon theme switcher button available on both the public landing page and authenticated dashboard headers.
+    - Responsive Styles: CSS custom property overrides dynamically update color themes, card backgrounds, forms, scrollbars, and shadows.
+    - Visual Accessibility: Replaced all static white/grey layouts with variable tokens to ensure font contrast ratio matches accessibility guidelines.
+================================================================================

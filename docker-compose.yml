@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  # Database Service
+  mysql:
+    image: mysql:8.0
+    container_name: auraguard-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-RajaYuva@2610}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-insurance_db}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - auraguard-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Web API Service (.NET 9)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: auraguard-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5000
+      - ConnectionStrings__DefaultConnection=Server=mysql;Port=3306;Database=${MYSQL_DATABASE:-insurance_db};Uid=root;Pwd=${MYSQL_ROOT_PASSWORD:-RajaYuva@2610};AllowPublicKeyRetrieval=true;SSL Mode=None
+      - Jwt__Key=${JWT_KEY:-super_secret_key_that_is_at_least_32_characters_long_insurance_system}
+      - Jwt__Issuer=InsuranceApi
+      - Jwt__Audience=InsuranceReactClient
+      - AllowedOrigins=*
+    ports:
+      - "${BACKEND_PORT:-5000}:5000"
+    volumes:
+      - backend_uploads:/app/uploads
+    networks:
+      - auraguard-net
+
+  # Frontend Web Client (React + Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: auraguard-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    networks:
+      - auraguard-net
+
+volumes:
+  mysql_data:
+  backend_uploads:
+
+networks:
+  auraguard-net:
+    driver: bridge

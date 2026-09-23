@@ -110,6 +110,9 @@ namespace InsuranceApi.Data
                 entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
                 entity.Property(e => e.RulesCheckResult).IsRequired().HasMaxLength(20).HasDefaultValue("Not Run");
                 entity.Property(e => e.RulesCheckReason).HasColumnType("text");
+                entity.Property(e => e.FraudRiskScore).HasDefaultValue(15);
+                entity.Property(e => e.FraudRiskLevel).HasMaxLength(20).HasDefaultValue("Low");
+                entity.Property(e => e.FraudRiskFactors).HasColumnType("text");
 
                 // Relationship: Policy -> Claims (1-to-many)
                 entity.HasOne(c => c.Policy)

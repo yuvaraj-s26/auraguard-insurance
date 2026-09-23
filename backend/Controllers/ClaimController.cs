@@ -70,7 +70,10 @@ namespace InsuranceApi.Controllers
                 c.Description,
                 c.Status,
                 c.RulesCheckResult,
-                c.RulesCheckReason
+                c.RulesCheckReason,
+                c.FraudRiskScore,
+                c.FraudRiskLevel,
+                c.FraudRiskFactors
             }).OrderByDescending(c => c.ClaimDate).ToListAsync();
 
             return Ok(claims);
@@ -113,8 +116,76 @@ namespace InsuranceApi.Controllers
                 claim.Description,
                 claim.Status,
                 claim.RulesCheckResult,
-                claim.RulesCheckReason
+                claim.RulesCheckReason,
+                claim.FraudRiskScore,
+                claim.FraudRiskLevel,
+                claim.FraudRiskFactors
             });
+        }
+
+        private async Task<(int score, string level, string factors)> EvaluateFraudRiskAsync(
+            Policy policy,
+            ClaimCreateRequest request,
+            int customerId)
+        {
+            int score = 10;
+            var factors = new System.Collections.Generic.List<string>();
+
+            var daysSinceStart = (request.IncidentDate - policy.StartDate).TotalDays;
+            if (daysSinceStart < 15 && daysSinceStart >= 0)
+            {
+                score += 35;
+                factors.Add($"Rapid claim: Incident occurred within {Math.Max(1, (int)daysSinceStart)} days of policy activation (+35)");
+            }
+
+            var policyType = await _context.PolicyTypes.FindAsync(policy.PolicyTypeId);
+            decimal totalCoverage = policyType?.Coverage ?? 100000;
+            var approvedPast = await _context.Claims
+                .Where(c => c.PolicyId == policy.PolicyId && (c.Status == "Approved" || c.Status == "Settled"))
+                .SumAsync(c => c.ClaimAmount);
+            decimal remCoverage = Math.Max(1, totalCoverage - approvedPast);
+            decimal ratio = (request.ClaimAmount / remCoverage) * 100;
+            if (ratio >= 80)
+            {
+                score += 25;
+                factors.Add($"High coverage drain: Claim requests {ratio:F0}% of remaining coverage (+25)");
+            }
+            else if (ratio >= 50)
+            {
+                score += 10;
+                factors.Add($"Moderate coverage drain: Claim requests {ratio:F0}% of remaining coverage (+10)");
+            }
+
+            var recentClaimsCount = await _context.Claims
+                .CountAsync(c => c.CustomerId == customerId && c.ClaimDate >= DateTime.UtcNow.AddDays(-180));
+            if (recentClaimsCount >= 2)
+            {
+                score += 25;
+                factors.Add($"Claim velocity: Customer submitted {recentClaimsCount} claims in the past 6 months (+25)");
+            }
+            else if (recentClaimsCount == 1)
+            {
+                score += 10;
+                factors.Add("Prior claim history in last 6 months (+10)");
+            }
+
+            var desc = request.Description.ToLower();
+            var suspiciousKeywords = new[] { "total loss", "unwitnessed", "unknown driver", "missing", "cash only", "immediate settlement", "overnight fire" };
+            var foundKeywords = suspiciousKeywords.Where(k => desc.Contains(k)).ToList();
+            if (foundKeywords.Any())
+            {
+                score += 15;
+                factors.Add($"Anomaly keywords flagged: \"{string.Join(", ", foundKeywords)}\" (+15)");
+            }
+
+            score = Math.Min(100, Math.Max(5, score));
+            string level = score >= 75 ? "Critical" : score >= 50 ? "High" : score >= 30 ? "Moderate" : "Low";
+            if (!factors.Any())
+            {
+                factors.Add("Clean profile: Standard filing velocity, within safe historical parameters.");
+            }
+
+            return (score, level, string.Join(" | ", factors));
         }
 
         [HttpPost]
@@ -168,6 +239,8 @@ namespace InsuranceApi.Controllers
                 }
             }
 
+            var (fraudScore, fraudLevel, fraudFactors) = await EvaluateFraudRiskAsync(policy, request, request.CustomerId);
+
             var claim = new InsuranceApi.Models.Claim
             {
                 PolicyId = request.PolicyId,
@@ -178,7 +251,10 @@ namespace InsuranceApi.Controllers
                 Description = request.Description,
                 Status = rulesCheckResult == "FAIL" ? "Rejected" : "Pending",
                 RulesCheckResult = rulesCheckResult,
-                RulesCheckReason = rulesCheckReason
+                RulesCheckReason = rulesCheckReason,
+                FraudRiskScore = fraudScore,
+                FraudRiskLevel = fraudLevel,
+                FraudRiskFactors = fraudFactors
             };
 
             _context.Claims.Add(claim);

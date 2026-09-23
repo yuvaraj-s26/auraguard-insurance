@@ -90,6 +90,15 @@ namespace InsuranceApi.Controllers
                 .CountAsync();
             decimal retentionRate = totalCustomers > 0 ? ((decimal)customersWithActive / totalCustomers) * 100 : 85.0m;
 
+            // Projected forward revenue next 6 months
+            var activePoliciesList = await _context.Policies.Where(p => p.Status == "Active").ToListAsync();
+            decimal projectedMonthlyRecurring = activePoliciesList.Sum(p => p.Premium);
+            var projectionChart = Enumerable.Range(1, 6).Select(i => new
+            {
+                month = DateTime.UtcNow.AddMonths(i).ToString("MMM yyyy"),
+                projectedRevenue = projectedMonthlyRecurring * (1 + (i * 0.03m)) // estimated 3% organic growth
+            }).ToList();
+
             return Ok(new
             {
                 totalCustomers,
@@ -100,6 +109,8 @@ namespace InsuranceApi.Controllers
                 totalPremiumCollection,
                 monthlyPremiumCollection,
                 revenueChart,
+                projectionChart,
+                projectedMonthlyRecurring,
                 avgClaimProcessingTimeHours,
                 lossRatio,
                 retentionRate
@@ -179,6 +190,55 @@ namespace InsuranceApi.Controllers
                 pendingClaims,
                 nextRenewalDate = nextRenewal
             });
+        }
+
+        [HttpGet("export/payments")]
+        public async Task<IActionResult> ExportPaymentsCsv()
+        {
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (userRole != "Admin" && userRole != "Agent") return Forbid();
+
+            var payments = await _context.Payments
+                .Include(p => p.Policy)
+                .ThenInclude(pol => pol.Customer)
+                .ThenInclude(c => c.User)
+                .OrderByDescending(p => p.PaymentDate)
+                .ToListAsync();
+
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("Payment ID,Transaction ID,Policy Number,Client Name,Amount (INR),Payment Mode,Status,Date");
+            foreach (var p in payments)
+            {
+                sb.AppendLine($"\"{p.PaymentId}\",\"{p.TransactionId}\",\"{p.Policy?.PolicyNumber}\",\"{p.Policy?.Customer?.User?.Name}\",\"{p.Amount:F2}\",\"{p.PaymentMode}\",\"{p.Status}\",\"{p.PaymentDate:yyyy-MM-dd HH:mm:ss}\"");
+            }
+
+            var bytes = System.Text.Encoding.UTF8.GetBytes(sb.ToString());
+            return File(bytes, "text/csv", $"AuraGuard-Payments-Export-{DateTime.UtcNow:yyyyMMddHHmmss}.csv");
+        }
+
+        [HttpGet("export/claims")]
+        public async Task<IActionResult> ExportClaimsCsv()
+        {
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (userRole != "Admin" && userRole != "Agent") return Forbid();
+
+            var claims = await _context.Claims
+                .Include(c => c.Policy)
+                .Include(c => c.Customer)
+                .ThenInclude(cu => cu.User)
+                .OrderByDescending(c => c.ClaimDate)
+                .ToListAsync();
+
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("Claim ID,Policy Number,Client Name,Claim Amount (INR),Incident Date,Filed Date,Status,Rules Result,AI Fraud Risk Score,AI Risk Level,Risk Diagnostic Summary");
+            foreach (var c in claims)
+            {
+                var cleanDesc = c.FraudRiskFactors?.Replace("\"", "'") ?? "Clean profile";
+                sb.AppendLine($"\"{c.ClaimId}\",\"{c.Policy?.PolicyNumber}\",\"{c.Customer?.User?.Name}\",\"{c.ClaimAmount:F2}\",\"{c.IncidentDate:yyyy-MM-dd}\",\"{c.ClaimDate:yyyy-MM-dd}\",\"{c.Status}\",\"{c.RulesCheckResult}\",\"{c.FraudRiskScore}\",\"{c.FraudRiskLevel}\",\"{cleanDesc}\"");
+            }
+
+            var bytes = System.Text.Encoding.UTF8.GetBytes(sb.ToString());
+            return File(bytes, "text/csv", $"AuraGuard-Claims-Audit-{DateTime.UtcNow:yyyyMMddHHmmss}.csv");
         }
     }
 }

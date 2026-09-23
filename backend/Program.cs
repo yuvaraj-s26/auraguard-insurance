@@ -24,14 +24,41 @@ builder.Services.AddDbContext<InsuranceDbContext>(options =>
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddSingleton<IFileStorageService, FileStorageService>();
 
+var allowedOriginsConfig = builder.Configuration["AllowedOrigins"];
+var originsList = new List<string>
+{
+    "http://localhost:5173", 
+    "http://localhost:5174", 
+    "http://localhost:5175", 
+    "http://localhost:5176", 
+    "http://localhost:3000", 
+    "http://localhost:3001", 
+    "http://localhost:8080"
+};
+
+if (!string.IsNullOrEmpty(allowedOriginsConfig))
+{
+    originsList.AddRange(allowedOriginsConfig.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+}
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+        if (allowedOriginsConfig == "*")
+        {
+            policy.SetIsOriginAllowed(_ => true)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        }
+        else
+        {
+            policy.WithOrigins(originsList.Distinct().ToArray())
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        }
     });
 });
 

@@ -20,5 +20,10 @@ namespace InsuranceApi.Models
 
         public required string RulesCheckResult { get; set; } = "Not Run"; // PASS, WARNING, FAIL
         public string? RulesCheckReason { get; set; }
+
+        // AI Fraud Detection Engine properties
+        public int FraudRiskScore { get; set; } = 15; // 0 - 100
+        public string FraudRiskLevel { get; set; } = "Low"; // Low, Moderate, High, Critical
+        public string? FraudRiskFactors { get; set; } // JSON or bulleted factors
     }
 }

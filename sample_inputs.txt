@@ -1,0 +1,122 @@
+========================================================================
+AURAGUARD INSURANCE POLICY MANAGEMENT SYSTEM - SAMPLE INPUTS GUIDE
+========================================================================
+
+This guide provides copy-pasteable sample input values and test cases for all pages in the AuraGuard portal, organized by account roles (Admin, Agent, and Customer).
+
+------------------------------------------------------------------------
+1. SECURITY & LOGINS (http://localhost:5173/login)
+------------------------------------------------------------------------
+
+* SYSTEM ADMINISTRATOR CREDENTIALS
+  - Email Address:  admin@insurance.com
+  - Password:       admin123
+  - Use case:       Manage all customers, see total premium charts, approve claims, and cancel policies.
+
+* AGENT CREDENTIALS
+  - Email Address:  agent@insurance.com
+  - Password:       agent123
+  - Use case:       Create customer profiles, issue new policies, and review filed claims.
+
+* NEW USER REGISTRATION (http://localhost:5173/register)
+  - Full Name:      Yuvaraj Kumar
+  - Email Address:  yuvaraja4780@gmail.com
+  - Password:       TestPass123!
+  - Role:           Customer (or Agent / Admin)
+
+------------------------------------------------------------------------
+2. COMPLETE PROFILE PAGE (http://localhost:5173/profile)
+------------------------------------------------------------------------
+When a Customer logs in for the first time, they must complete their profile details to start buying policies:
+
+* CUSTOMER PROFILE FORM FIELDS
+  - Date of Birth:          1995-08-24 (YYYY-MM-DD format)
+  - Gender:                 Male
+  - Phone Number:           +919876543210
+  - Aadhaar Card Number:    123456789012 (Must be a 12-digit numeric code)
+  - Address:                Flat 405, Sapphire Towers, Outer Ring Road, Bangalore - 560103
+  - Nominee Name:           Priya Kumar
+  - Nominee Relationship:   Spouse (or Mother, Son, Father, Daughter)
+
+------------------------------------------------------------------------
+3. CUSTOMER MANAGEMENT DIRECTORY (http://localhost:5173/customers)
+------------------------------------------------------------------------
+(Accessible by Admin and Agent only)
+Agents/Admins link registered User IDs to a customer record:
+
+* CREATE CUSTOMER PROFILE FORM FIELDS
+  - Associated User ID:    3 (Check the database/user account ID returned during registration)
+  - Date of Birth:          1990-03-15
+  - Gender:                 Female
+  - Phone Number:           +919988776655
+  - Address:                12A Garden Enclave, Green Glen Layout, Bangalore - 560103
+  - Aadhaar Card Number:    987654321098
+  - Nominee Name:           Ramesh Sundar
+  - Nominee Relationship:   Father
+
+------------------------------------------------------------------------
+4. POLICY DESK (http://localhost:5173/policies)
+------------------------------------------------------------------------
+Admins and Agents use this to issue new insurance coverage:
+
+* ISSUE NEW INSURANCE POLICY FORM FIELDS
+  - Customer ID:            1 (Must refer to an existing Customer ID, e.g., 1 or 2)
+  - Policy Plan/Type:       [Select plan from dropdown list]
+                            - Life Secure Term Plan (Coverage: $1,000,000, Premium Rate: 0.5%)
+                            - Health Guard Premium (Coverage: $500,000, Premium Rate: 2.0%)
+                            - Motor Vehicle Policy (Coverage: $300,000, Premium Rate: 1.5%)
+                            - Property Protection Plan (Coverage: $2,500,000, Premium Rate: 0.3%)
+  - Sum Assured:            150000 (Maximum coverage depends on the plan chosen above)
+
+  *Note: The backend automatically computes the yearly Premium.
+   Example: Sum Assured = $150,000 for Health Guard (2%) -> Premium = $3,000.00.
+
+------------------------------------------------------------------------
+5. PREMIUM PAYMENTS & BILLING (http://localhost:5173/payments)
+------------------------------------------------------------------------
+Used to activate "Pending" policies or pay renewal fees:
+
+* PAY INSURANCE INVOICE FORM FIELDS
+  - Policy ID:              1 (The ID of the policy to pay, e.g. 1, 2, or 3)
+  - Premium Amount ($):     3000.00 (Must match the calculated premium of that policy)
+  - Payment Channel:        [Select from dropdown]
+                            - Credit Card
+                            - Debit Card
+                            - UPI Payment
+                            - Net Banking
+                            - Cash Ledger
+  *Result: On click, policy status changes from "Pending" to "Active", and the receipt becomes downloadable.
+
+------------------------------------------------------------------------
+6. CLAIMS CLEARANCE OFFICE (http://localhost:5173/claims)
+------------------------------------------------------------------------
+Filed by Customers when requesting reimbursement:
+
+* FILE INSURANCE CLAIM FORM FIELDS
+  - Policy ID:                  1 (The ID of the active policy to claim against)
+  - Customer ID:                1 (Associated Customer ID)
+  - Date of Incident:           2026-07-10 (YYYY-MM-DD format)
+  - Claim Settlement Amount ($): 1500.00 (Must not exceed the policy's sum assured)
+  - Incident Description:       "Minor collision at a traffic intersection resulting in front bumper damage. Replaced the bumper at authorized workshop. Uploading invoice details."
+
+  *Clearance Action by Admin/Agent:
+   - Click "Review" to change status to "Under Review".
+   - Click "Approve" or "Reject".
+   - Click "Settle Funds" (for approved claims) to disburse the claims payout.
+
+------------------------------------------------------------------------
+7. COMPLIANCE DOCUMENT VAULT (http://localhost:5173/documents)
+------------------------------------------------------------------------
+Upload verifying files for policy underwriting and KYC compliance:
+
+* UPLOAD COMPLIANCE FILE FIELDS
+  - Select Associated Policy:   [Select Policy, e.g. PL-10001]
+  - Document Verification Type: [Select from dropdown]
+                                - Aadhaar Card
+                                - PAN Card
+                                - Passport File
+                                - Medical Clearance Certificate
+                                - Police Accident Report
+                                - Policy Contract Copy
+  - Select File:                [Choose any PDF, PNG, or JPG document from local drive]
+========================================================================
